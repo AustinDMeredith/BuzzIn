@@ -1,0 +1,10 @@
+[project]
+name = "buzzin"
+version = "0.1.0"
+description = "A live buzzer trivia game for a whole room."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]==0.153.0",
+    "uvicorn==0.54.0",
+    "websockets>=13",
+]

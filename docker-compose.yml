@@ -1,0 +1,17 @@
+name: BuzzIn
+services:
+  buzzin:
+    image: ghcr.io/austindmeredith/buzzin:latest
+    container_name: buzzin
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.buzzin.rule=Host(`buzzin.services.austinmeredithlabs.com`)
+      - traefik.http.routers.buzzin.tls.certresolver=letsencrypt
+      - traefik.http.services.buzzin.loadbalancer.server.port=8000
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true
