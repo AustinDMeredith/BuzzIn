@@ -1,0 +1,9 @@
+name: BuzzIn
+services:
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+

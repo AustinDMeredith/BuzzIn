@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 app = FastAPI(
     title="BuzzIn",
-    description="change me",
+    description="BuzzIn API",
     version="1.0.0"
 )
 
