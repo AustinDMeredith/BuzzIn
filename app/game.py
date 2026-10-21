@@ -1,5 +1,9 @@
 import asyncio
+import logging
 
+# init logger for module
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
 class Game:
     """Shared trivia state: players, scores, and the first-buzz-wins lock."""
@@ -12,7 +16,8 @@ class Game:
 
     async def join(self, player: str) -> None:
         # TODO: register a new player with score 0
-        raise NotImplementedError
+        logger.debug(f"{player} has joined the game!")
+
 
     async def buzz(self, player: str) -> bool:
         """Attempt to claim the buzz lock. Returns True if this player is the first-in."""
