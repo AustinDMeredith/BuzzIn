@@ -9,16 +9,7 @@
 </head>
 <body hx-ext="ws" ws-connect="/ws">
     <h1>BuzzIn</h1>
-    <!-- TODO: join form, question display, buzzer button, leaderboard -->
-    <!-- display form start out as a username input, 
-        then gets updated as the game goes on -->
-    <form id="display" ws-send>
-        <label for="player">Enter your username</label>
-        <input type="text" id="player" name="player">
-    </form>
-    <button ws-send hx-trigger="click" hx-vals='{"type": "join", player}'>
-        Join
-    </button>
-    <script src="/static/js/buzz.js"></script>
+    {% include "partials/join.html" %}
+    <script src="/static/js/join.js"></script>
 </body>
 </html>
