@@ -31,7 +31,9 @@ buzzin/
 │   ├── main.py          # FastAPI app, routes, WebSocket endpoint
 │   ├── game.py          # Game state, buzz lock, scoring
 │   ├── manager.py       # Connection tracking and broadcast
+│   ├── questions.py     # Loading and validating question sets
 │   └── templates/       # Jinja2 pages and HTML fragments
+├── questions/           # Question sets, one .json file each
 ├── static/              # CSS and the small bit of JS (spacebar buzz)
 ├── loadtest/
 │   └── bots.py          # 25-bot WebSocket load test
@@ -53,6 +55,34 @@ uv run uvicorn app.main:app --reload
  
 Open http://localhost:8000 to play, and http://localhost:8000/host for host controls.
  
+## Question Sets
+
+Questions live in the `questions/` folder. Each `.json` file is one set, and the host picks which set to play from a dropdown on `/host` before starting the game.
+
+A set is a list of question/answer pairs, asked in file order:
+
+```json
+[
+  {"question": "What is the capital of France?", "answer": "Paris"},
+  {"question": "How many legs does a spider have?", "answer": "8"}
+]
+```
+
+- The file name becomes the set's title: `world-capitals.json` shows up as "World Capitals".
+- New or edited files are picked up when the host loads a set, resets the game, or reloads `/host` — no restart needed.
+- A broken file is listed (disabled) on the host page with an error saying which entry is wrong; the other sets still work.
+- Set `QUESTIONS_DIR` to read sets from a different folder. In Docker, uncomment the `volumes` line in `docker-compose.yml` to edit sets on the server without rebuilding.
+
+## Tests
+
+```bash
+uv run pytest                    # everything
+uv run pytest tests/unit         # game, connection manager, templates, JS/template contracts
+uv run pytest tests/integration  # HTTP routes + real WebSocket clients against a live uvicorn server
+```
+
+The integration workflow runs both suites on every pull request to `main`.
+
 ## Load Test
  
 With the server running, launch the bots:
@@ -100,7 +130,11 @@ All messages are JSON with a `type` field.
 | --- | --- | --- |
 | Client → Server | `join` | Join with a display name |
 | Client → Server | `buzz` | Attempt to buzz in |
-| Host → Server | `next`, `correct`, `wrong`, `reset` | Host controls |
+| Client → Server | `answer` | First player in submits their answer (15 seconds, or it counts as wrong) |
+| Client → Server | `chat` | Chat message (lobby and between questions only) |
+| Host → Server | `host_join` | Claim the host controls |
+| Host → Server | `choose_set` | Pick a question set (lobby only) |
+| Host → Server | `next`, `correct`, `wrong`, `reset` | Host controls (`next` starts the game from the lobby) |
 | Server → Client | HTML fragments | HTMX swaps question, buzzer, and leaderboard by element ID |
  
 ## Author

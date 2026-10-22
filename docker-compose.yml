@@ -4,6 +4,8 @@ services:
     image: ghcr.io/austindmeredith/buzzin:latest
     container_name: buzzin
     restart: unless-stopped
+    volumes:
+      - ./questions:/app/questions:ro
     labels:
       - traefik.enable=true
       - traefik.http.routers.buzzin.rule=Host(`buzzin.services.austinmeredithlabs.com`)

@@ -10,6 +10,9 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    env:
+      # match the Python in the production Docker image
+      UV_PYTHON: "3.12"
 
     steps:
       - name: Checkout
@@ -25,6 +28,12 @@ jobs:
 
       - name: Smoke-test app import
         run: uv run python -c "import app.main"
+
+      - name: Unit tests
+        run: uv run pytest tests/unit
+
+      - name: Integration tests
+        run: uv run pytest tests/integration
 
       - name: Build Docker image
         run: docker build -t buzzin:ci .

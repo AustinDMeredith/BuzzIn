@@ -8,3 +8,15 @@ dependencies = [
     "uvicorn==0.54.0",
     "websockets>=13",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-timeout>=2.4.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
+timeout = 30

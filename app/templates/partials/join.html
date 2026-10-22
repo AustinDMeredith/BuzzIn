@@ -1,7 +1,10 @@
 <div id="screen" hx-swap-oob="true">
-  <form id="display">
+  <form id="display" ws-send hx-vals='{"type": "join"}'>
       <label for="player">Enter your username</label>
-      <input type="text" id="player" name="player">
+      <input type="text" id="player" name="player" autocomplete="off" autofocus>
+      <button id="submit" type="submit">Join</button>
   </form>
-  <button id="submit" onclick="join()">Join</button>
+  {% if error %}
+  <p class="error">{{ error }}</p>
+  {% endif %}
 </div>
