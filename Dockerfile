@@ -6,6 +6,7 @@ RUN uv sync --frozen --no-install-project --no-dev
 
 COPY app ./app
 COPY static ./static
+COPY questions ./questions
 
 RUN useradd --no-create-home --shell /usr/sbin/nologin appuser
 USER appuser

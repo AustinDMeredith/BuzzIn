@@ -1,0 +1,103 @@
+<div id="host_screen" hx-swap-oob="true">
+  <p>Hosting as <strong>{{ host }}</strong></p>
+
+  {% if question_error %}
+  <p class="error">{{ question_error }}</p>
+  {% endif %}
+
+  {% if phase == "lobby" %}
+  <h2>Question set</h2>
+  {% if sets %}
+  <form id="set-form" ws-send hx-vals='{"type": "choose_set"}'>
+    <select id="set-select" name="question_set" aria-label="Question set">
+      {% for option in sets %}
+      <option value="{{ option.id }}"{% if option.error %} disabled{% endif %}{% if question_set and option.id == question_set.id %} selected{% endif %}>
+        {{ option.name }} {% if option.error %}(broken){% else %}({{ option.questions | length }} questions){% endif %}
+      </option>
+      {% endfor %}
+    </select>
+    <button type="submit">Load</button>
+  </form>
+  {% endif %}
+  {% if question_set %}
+  <p>Loaded: <strong>{{ question_set.name }}</strong> ({{ question_set.questions | length }} questions)</p>
+  {% else %}
+  <p class="error">No question sets found. Add a <code>.json</code> file to the questions folder, then reload this page.</p>
+  {% endif %}
+  {% for broken in sets if broken.error %}
+  <p class="error">{{ broken.error }}</p>
+  {% endfor %}
+  {% endif %}
+
+  <h2>Question</h2>
+  {% if question and phase != "lobby" %}
+  <p class="question-meta">{{ question_set.name }} · Question {{ question_number }} of {{ question_count }}</p>
+  <p class="question-text">{{ question.question }}</p>
+  <p class="answer-key">Answer: <strong>{{ question.answer }}</strong></p>
+  {% endif %}
+  {% if phase == "lobby" %}
+  <p>Waiting to start.</p>
+  {% elif phase == "question" %}
+  {% if last_result %}
+  <p class="last-result">
+    {% if last_result.answer is none %}
+    <strong>{{ last_result.player }}</strong> ran out of time
+    {% else %}
+    <strong>{{ last_result.player }}</strong> guessed "{{ last_result.answer }}" — wrong
+    {% endif %}
+  </p>
+  {% endif %}
+  <p>Buzzing is open…</p>
+  {% elif phase == "answering" %}
+  <p><strong>{{ current_winner }}</strong> is answering —
+    <span class="countdown" data-seconds-left="{{ seconds_left }}">{{ seconds_left }}</span> seconds left</p>
+  {% elif phase == "judging" %}
+  <p><strong>{{ current_winner }}</strong> answered: "{{ current_answer }}"</p>
+  {% elif phase == "intermission" %}
+  <p><strong>{{ last_result.player }}</strong> got it! ("{{ last_result.answer }}")</p>
+  {% elif phase == "reveal" %}
+  <p>Nobody got it — the answer is showing on everyone's screen.</p>
+  {% elif phase == "game_over" %}
+  <p>Game over — {% if winners | length == 1 %}<strong>{{ winners[0] }}</strong> wins!{% elif winners %}<strong>{{ winners | join(" and ") }}</strong> tie!{% else %}nobody scored!{% endif %}</p>
+  {% endif %}
+  {% if current_lossers %}
+  <p>Locked out: {{ current_lossers | join(", ") }}</p>
+  {% endif %}
+
+  <div id="host-controls">
+    {% if phase != "game_over" %}
+    <button {% if phase == "lobby" and not question_set %}disabled {% endif %}ws-send hx-vals='{"type": "next"}'>
+      {%- if phase == "lobby" %}Start game
+      {%- elif phase in ("question", "answering", "judging") %}Reveal answer
+      {%- elif is_last_question %}Final results
+      {%- else %}Next question{% endif -%}
+    </button>
+    {% endif %}
+    {% if phase == "judging" %}
+    <button ws-send hx-vals='{"type": "correct"}'>Correct</button>
+    <button ws-send hx-vals='{"type": "wrong"}'>Wrong</button>
+    {% endif %}
+    <button ws-send hx-vals='{"type": "reset"}'
+            hx-confirm="Reset the game? All players and scores will be cleared.">Reset game</button>
+  </div>
+
+  <h2>Leaderboard ({{ players | length }} players)</h2>
+  <ol id="leaderboard">
+    {% for player, score in players.items() | sort(attribute="1", reverse=true) %}
+    <li>{{ player }} — {{ score }}</li>
+    {% endfor %}
+  </ol>
+
+  {% if chat_open %}
+  <h2>Chat</h2>
+  <ul id="chat-log">
+    {% for entry in chat_messages %}
+    <li><strong>{{ entry.player }}:</strong> {{ entry.message }}</li>
+    {% endfor %}
+  </ul>
+  <form id="chat-form" ws-send hx-vals='{"type": "chat"}'>
+    <input type="text" name="message" autocomplete="off" placeholder="Say something…">
+    <button type="submit">Send</button>
+  </form>
+  {% endif %}
+</div>

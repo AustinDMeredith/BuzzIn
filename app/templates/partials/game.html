@@ -1,0 +1,87 @@
+<div id="screen" hx-swap-oob="true">
+  <p>Playing as <strong>{{ player }}</strong> — {{ players[player] }} points</p>
+
+  {% if question and phase in ("question", "answering", "judging") %}
+  <p class="question-meta">Question {{ question_number }} of {{ question_count }}</p>
+  <p class="question-text">{{ question.question }}</p>
+  {% endif %}
+
+  {% if phase == "question" %}
+  {% if last_result %}
+  <p class="last-result">
+    {% if last_result.answer is none %}
+    <strong>{{ last_result.player }}</strong> ran out of time
+    {% else %}
+    <strong>{{ last_result.player }}</strong> guessed "{{ last_result.answer }}" — wrong
+    {% endif %}
+  </p>
+  {% endif %}
+
+  {% if player in current_lossers %}
+  <h2>You're locked out for this question</h2>
+  {% else %}
+  <h2>Buzz in!</h2>
+  {% endif %}
+  <button id="buzz-button" ws-send hx-vals='{"type": "buzz"}'
+          {% if player in current_lossers %}disabled{% endif %}>
+    BUZZ
+  </button>
+  <p><small>or press Space</small></p>
+
+  {% elif phase == "answering" %}
+  {% if current_winner == player %}
+  <h2>You buzzed in first! Type your answer</h2>
+  <form id="answer-form" ws-send hx-vals='{"type": "answer"}'>
+    <input type="text" name="answer" maxlength="100" autocomplete="off" autofocus>
+    <button type="submit">Submit</button>
+  </form>
+  {% else %}
+  <h2>{{ current_winner }} is answering…</h2>
+  {% endif %}
+  <p><span class="countdown" data-seconds-left="{{ seconds_left }}">{{ seconds_left }}</span> seconds left</p>
+
+  {% elif phase == "judging" %}
+  <h2>{{ current_winner }} answered: "{{ current_answer }}"</h2>
+  <p>Waiting for the host…</p>
+
+  {% elif phase == "intermission" %}
+  <h2>{{ last_result.player }} got it!</h2>
+  <p>{{ last_result.player }} said "{{ last_result.answer }}"</p>
+  {% if question %}
+  <div class="answer-reveal">Answer: <strong>{{ question.answer }}</strong></div>
+  {% endif %}
+
+  {% elif phase == "reveal" %}
+  <h2>Nobody got it</h2>
+  {% if question %}
+  <div class="answer-reveal">The answer was: <strong>{{ question.answer }}</strong></div>
+  {% endif %}
+
+  {% elif phase == "game_over" %}
+  <h2>Game over — {% if winners | length == 1 %}{{ winners[0] }} wins!{% elif winners %}{{ winners | join(" and ") }} tie!{% else %}nobody scored!{% endif %}</h2>
+  {% endif %}
+
+  {% if phase in ("intermission", "reveal", "game_over") %}
+  {% if phase != "game_over" %}
+  <p>Waiting for the next question…</p>
+  {% endif %}
+
+  <h2>Leaderboard</h2>
+  <ol id="leaderboard">
+    {% for name, score in players.items() | sort(attribute="1", reverse=true) %}
+    <li>{{ name }} — {{ score }}</li>
+    {% endfor %}
+  </ol>
+
+  <h2>Chat</h2>
+  <ul id="chat-log">
+    {% for entry in chat_messages %}
+    <li><strong>{{ entry.player }}:</strong> {{ entry.message }}</li>
+    {% endfor %}
+  </ul>
+  <form id="chat-form" ws-send hx-vals='{"type": "chat"}'>
+    <input type="text" name="message" autocomplete="off" placeholder="Say something…">
+    <button type="submit">Send</button>
+  </form>
+  {% endif %}
+</div>

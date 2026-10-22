@@ -1,5 +1,8 @@
 <div id="screen" hx-swap-oob="true">
   <h2>Waiting for players…</h2>
+  {% if question_set %}
+  <p class="question-meta">Question set: {{ question_set.name }} ({{ question_set.questions | length }} questions)</p>
+  {% endif %}
   <ul>
     {% for player in players %}
     <li>{{ player }}</li>

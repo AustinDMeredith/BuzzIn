@@ -1,6 +1,504 @@
-body {
-    font-family: system-ui, sans-serif;
-    margin: 2rem;
+/* BuzzIn: dark theme with matte blue and green accents.
+   Everything is styled through the ids/attributes the partials already use,
+   so the HTMX swap targets stay untouched. */
+
+:root {
+    --bg: #14171b;
+    --surface: #1d2126;
+    --surface-raised: #252a30;
+    --border: #2f363e;
+    --text: #e2e5e9;
+    --muted: #8a939d;
+
+    --blue: #5b7fa6;
+    --blue-strong: #6d91b8;
+    --blue-soft: rgba(91, 127, 166, 0.16);
+    --green: #6a9a7b;
+    --green-strong: #7bab8c;
+    --green-soft: rgba(106, 154, 123, 0.16);
+    --red: #ad6b6b;
+    --red-soft: rgba(173, 107, 107, 0.16);
+
+    --radius: 12px;
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
-/* TODO: question/buzzer/leaderboard styling */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 2rem 1rem 3rem;
+    background: radial-gradient(circle at top, #1b2026 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+}
+
+h1 {
+    margin: 0 auto 1.5rem;
+    max-width: 640px;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--blue-strong);
+}
+
+h2 {
+    margin: 1.5rem 0 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 650;
+}
+
+h2:first-child {
+    margin-top: 0;
+}
+
+p {
+    margin: 0.5rem 0;
+}
+
+small {
+    color: var(--muted);
+}
+
+/* ---------- main card (player #screen and host #host_screen) ---------- */
+
+#screen,
+#host_screen {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 1.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+/* "Playing as alice — 3 points" / "Hosting as Quizmaster" header line */
+#screen > p:first-child,
+#host_screen > p:first-child {
+    margin: -0.25rem 0 1.25rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+}
+
+#screen > p:first-child strong,
+#host_screen > p:first-child strong {
+    color: var(--text);
+}
+
+/* ---------- forms ---------- */
+
+label {
+    display: block;
+    margin-bottom: 0.4rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 0.7rem 0.85rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input[type="text"]::placeholder {
+    color: var(--muted);
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-soft);
+}
+
+button {
+    padding: 0.65rem 1.2rem;
+    background: var(--blue);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #f4f6f8;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s, opacity 0.15s;
+}
+
+button:hover:not(:disabled) {
+    background: var(--blue-strong);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+button:focus-visible {
+    outline: 2px solid var(--blue-strong);
+    outline-offset: 2px;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+/* join screens: input, then a full-width button under it */
+#submit {
+    width: 100%;
+    margin-top: 0.75rem;
+    background: var(--green);
+}
+
+#submit:hover {
+    background: var(--green-strong);
+}
+
+.error {
+    margin-top: 0.75rem;
+    padding: 0.6rem 0.8rem;
+    background: var(--red-soft);
+    border-left: 3px solid var(--red);
+    border-radius: 6px;
+    color: #e3b5b5;
+}
+
+/* input + button on one row */
+#chat-form,
+#answer-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+#chat-form input,
+#answer-form input {
+    flex: 1;
+    min-width: 0;
+}
+
+#answer-form button {
+    background: var(--green);
+}
+
+#answer-form button:hover {
+    background: var(--green-strong);
+}
+
+/* ---------- lobby player list (the list that isn't the chat log) ---------- */
+
+#screen > ul:not(#chat-log) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+#screen > ul:not(#chat-log) li {
+    padding: 0.3rem 0.8rem;
+    background: var(--blue-soft);
+    border: 1px solid rgba(91, 127, 166, 0.35);
+    border-radius: 999px;
+    font-size: 0.9rem;
+}
+
+/* ---------- buzzer ---------- */
+
+#buzz-button {
+    display: block;
+    width: 11rem;
+    height: 11rem;
+    margin: 1.5rem auto 0.75rem;
+    background: radial-gradient(circle at 35% 30%, var(--green-strong), var(--green) 70%);
+    border: 4px solid rgba(255, 255, 255, 0.08);
+    border-radius: 50%;
+    box-shadow: 0 10px 0 #4b6f58, var(--shadow);
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+}
+
+#buzz-button:hover:not(:disabled) {
+    background: radial-gradient(circle at 35% 30%, #8cbc9d, var(--green-strong) 70%);
+}
+
+#buzz-button:active:not(:disabled) {
+    transform: translateY(8px);
+    box-shadow: 0 2px 0 #4b6f58, var(--shadow);
+}
+
+#buzz-button:disabled {
+    background: var(--surface-raised);
+    box-shadow: 0 6px 0 #1a1e22;
+    color: var(--muted);
+    opacity: 1;
+}
+
+#buzz-button + p {
+    text-align: center;
+}
+
+/* centre the status headline ("Buzz in!", "bob got it!") and the lines under it */
+#screen > h2:first-of-type,
+#screen > h2:first-of-type ~ p {
+    text-align: center;
+}
+
+#screen > h2:first-of-type ~ p {
+    color: var(--muted);
+}
+
+/* ---------- countdown ---------- */
+
+.countdown {
+    display: inline-block;
+    min-width: 2.5ch;
+    padding: 0.1rem 0.5rem;
+    background: var(--blue-soft);
+    border-radius: 6px;
+    color: var(--blue-strong);
+    font-size: 1.4rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+#screen p:has(> .countdown) {
+    text-align: center;
+    color: var(--muted);
+}
+
+/* ---------- last result line ("alice guessed … — wrong") ---------- */
+
+.last-result {
+    padding: 0.6rem 0.8rem;
+    background: var(--red-soft);
+    border-left: 3px solid var(--red);
+    border-radius: 6px;
+}
+
+/* ---------- questions ---------- */
+
+.question-meta {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+#screen > .question-meta,
+#screen > .question-text {
+    text-align: center;
+}
+
+.question-text {
+    margin: 0.25rem 0 1.25rem;
+    padding: 1rem 1.1rem;
+    background: var(--blue-soft);
+    border: 1px solid rgba(91, 127, 166, 0.35);
+    border-radius: var(--radius);
+    font-size: 1.3rem;
+    font-weight: 650;
+    line-height: 1.35;
+}
+
+/* the official answer: revealed to players, always visible to the host */
+.answer-reveal,
+.answer-key {
+    margin: 0.75rem 0;
+    padding: 0.75rem 1rem;
+    background: var(--green-soft);
+    border-left: 3px solid var(--green);
+    border-radius: 6px;
+}
+
+.answer-reveal {
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+.answer-reveal strong,
+.answer-key strong {
+    color: var(--green-strong);
+}
+
+/* ---------- question set picker (host lobby) ---------- */
+
+#set-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#set-form select {
+    flex: 1;
+    min-width: 0;
+    padding: 0.65rem 0.85rem;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font: inherit;
+}
+
+#set-form select:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px var(--blue-soft);
+}
+
+code {
+    padding: 0.1rem 0.35rem;
+    background: var(--bg);
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+/* ---------- leaderboard ---------- */
+
+#leaderboard {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: rank;
+}
+
+#leaderboard li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid var(--border);
+    counter-increment: rank;
+}
+
+#leaderboard li:last-child {
+    border-bottom: none;
+}
+
+#leaderboard li::before {
+    content: counter(rank);
+    display: grid;
+    place-items: center;
+    width: 1.7rem;
+    height: 1.7rem;
+    background: var(--surface-raised);
+    border-radius: 50%;
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+#leaderboard li:first-child {
+    background: var(--green-soft);
+    border-radius: 8px;
+}
+
+#leaderboard li:first-child::before {
+    background: var(--green);
+    color: #f4f6f8;
+}
+
+/* ---------- chat ---------- */
+
+#chat-log {
+    max-height: 14rem;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    overflow-y: auto;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    list-style: none;
+}
+
+#chat-log li {
+    padding: 0.25rem 0;
+    overflow-wrap: anywhere;
+}
+
+#chat-log strong {
+    color: var(--blue-strong);
+}
+
+/* ---------- host controls ---------- */
+
+#host-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.25rem 0 0.5rem;
+}
+
+#host-controls button[hx-vals*='"correct"'] {
+    background: var(--green);
+}
+
+#host-controls button[hx-vals*='"correct"']:hover {
+    background: var(--green-strong);
+}
+
+#host-controls button[hx-vals*='"wrong"'] {
+    background: var(--red);
+}
+
+#host-controls button[hx-vals*='"wrong"']:hover {
+    background: #bd7b7b;
+}
+
+/* reset is destructive, so keep it quiet and push it to the end */
+#host-controls button[hx-vals*='"reset"'] {
+    margin-left: auto;
+    background: transparent;
+    border-color: var(--border);
+    color: var(--muted);
+}
+
+#host-controls button[hx-vals*='"reset"']:hover {
+    background: var(--red-soft);
+    border-color: var(--red);
+    color: #e3b5b5;
+}
+
+/* ---------- small screens ---------- */
+
+@media (max-width: 480px) {
+    body {
+        padding: 1.25rem 0.75rem 2rem;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    #screen,
+    #host_screen {
+        padding: 1.25rem;
+    }
+
+    #buzz-button {
+        width: 9.5rem;
+        height: 9.5rem;
+    }
+
+    #host-controls button {
+        flex: 1 1 auto;
+    }
+
+    #host-controls button[hx-vals*='"reset"'] {
+        margin-left: 0;
+    }
+}
