@@ -1,0 +1,19 @@
+<div id="screen" hx-swap-oob="true">
+  <h2>Waiting for players…</h2>
+  <ul>
+    {% for player in players %}
+    <li>{{ player }}</li>
+    {% endfor %}
+  </ul>
+
+  <h2>Chat</h2>
+  <ul id="chat-log">
+    {% for entry in chat_messages %}
+    <li><strong>{{ entry.player }}:</strong> {{ entry.message }}</li>
+    {% endfor %}
+  </ul>
+  <form id="chat-form" ws-send hx-vals='{"type": "chat"}'>
+    <input type="text" name="message" autocomplete="off" placeholder="Say something…">
+    <button type="submit">Send</button>
+  </form>
+</div>
