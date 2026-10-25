@@ -91,28 +91,37 @@ With the server running, launch the bots:
 uv run python loadtest/bots.py --url ws://localhost:8000/ws --bots 25
 ```
  
-Each bot joins, waits for questions, and buzzes at a random delay. The script reports connections held and confirms each question had exactly one winner. Point `--url` at `wss://buzzin.services.austinmeredithlabs.com/ws` to test the deployed server.
+By default the script also runs a bot host that starts the game, marks every answer correct, and moves on until game over. Each bot joins, buzzes at a random delay when a question opens, and answers if it wins. At the end the script reports connections held, the winner of every buzz round (each must have exactly one), and how fast a winning buzz reaches the screen. It exits non-zero on any failure.
+
+| Flag | Default | Purpose |
+| --- | --- | --- |
+| `--bots` | 25 | Number of bot players |
+| `--no-host` | off | Skip the bot host and run the game yourself from `/host`; Ctrl+C prints the report |
+| `--min-delay`, `--max-delay` | 0.05, 1.0 | Range of each bot's random buzz delay, in seconds |
+| `--set` | server default | Question set id to load first, e.g. `general-knowledge` |
+
+The bot host takes over host controls and resets the game if it isn't in the lobby, so don't run it during a real game. Point `--url` at `wss://buzzin.services.austinmeredithlabs.com/ws` to test the deployed server.
  
 ## Deployment
  
 BuzzIn runs as a single container behind Traefik. **Use one Uvicorn worker** since game state lives in memory, so multiple workers would split players into separate games.
  
 ```yaml
+name: BuzzIn
 services:
   buzzin:
-    image: ghcr.io/<your-username>/buzzin:latest
+    image: ghcr.io/austindmeredith/buzzin:latest
     container_name: buzzin
     restart: unless-stopped
+    volumes:
+      - ./<path to questions dir>:/app/questions:ro
     labels:
-      - traefik.enable=true
-      - traefik.http.routers.buzzin.rule=Host(`buzzin.services.austinmeredithlabs.com`)
-      - traefik.http.routers.buzzin.tls.certresolver=letsencrypt
-      - traefik.http.services.buzzin.loadbalancer.server.port=8000
+      - <proxy settings here>
     networks:
-      - traefik
+      - <your docker network>
  
 networks:
-  traefik:
+  <your docker network>:
     external: true
 ```
  
