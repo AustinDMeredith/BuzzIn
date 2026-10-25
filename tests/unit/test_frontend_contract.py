@@ -37,11 +37,11 @@ def test_page_scripts_do_not_redeclare_globals(page):
 
 def test_player_page_loads_its_scripts_once():
     names = [script.name for script in scripts_on("index.html")]
-    assert names == ["buzz.js", "countdown.js"]
+    assert names == ["buzz.js", "countdown.js", "chat.js"]
 
 
 def test_host_page_loads_its_scripts_once():
-    assert [script.name for script in scripts_on("host.html")] == ["countdown.js"]
+    assert [script.name for script in scripts_on("host.html")] == ["countdown.js", "chat.js"]
 
 
 PARTIALS = sorted((TEMPLATES / "partials").glob("*.html"))
@@ -105,3 +105,11 @@ def test_countdown_script_targets_countdown_elements(partial):
     html = (TEMPLATES / "partials" / partial).read_text()
     assert '.countdown[data-seconds-left]' in source
     assert 'class="countdown" data-seconds-left=' in html
+
+
+@pytest.mark.parametrize("partial", ["lobby.html", "game.html", "host_controls.html"])
+def test_chat_script_targets_chat_log(partial):
+    source = (STATIC / "js" / "chat.js").read_text()
+    html = (TEMPLATES / "partials" / partial).read_text()
+    assert 'getElementById("chat-log")' in source
+    assert 'id="chat-log"' in html
